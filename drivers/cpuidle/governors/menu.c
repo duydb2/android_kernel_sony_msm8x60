@@ -269,6 +269,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 {
 	struct menu_device *data = &__get_cpu_var(menu_devices);
 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+	int power_usage = -1;
 	int i;
 	int multiplier;
 	struct timespec t;
@@ -316,7 +317,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 	 * unless the timer is happening really really soon.
 	 */
 	if (data->expected_us > 5 &&
-		dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+		drv->states[CPUIDLE_DRIVER_STATE_START].disable == 0)
 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
 
 	/*
@@ -325,9 +326,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 	 */
 	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
 		struct cpuidle_state *s = &drv->states[i];
-		struct cpuidle_state_usage *su = &dev->states_usage[i];
 
-		if (su->disable)
+		if (s->disable)
 			continue;
 		if (s->target_residency > data->predicted_us) {
 			low_predicted = 1;
@@ -338,8 +338,11 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 		if (s->exit_latency * multiplier > data->predicted_us)
 			continue;
 
-		data->last_state_idx = i;
-		data->exit_us = s->exit_latency;
+		if (s->power_usage < power_usage) {
+			power_usage = s->power_usage;
+			data->last_state_idx = i;
+			data->exit_us = s->exit_latency;
+		}
 	}
 
 	/* not deepest C-state chosen for low predicted residency */
