@@ -163,14 +163,13 @@ config CPU_FREQ_DEFAULT_GOV_ADAPTIVE
 	  you to get a full dynamic cpu frequency capable system by simply
 	  loading your cpufreq low-level hardware driver, using the
 	  'adaptive' governor for latency-sensitive workloads and demanding
+	  performance.
 
 config CPU_FREQ_DEFAULT_GOV_SMARTASSV2
 	bool "smartass2"
 	select CPU_FREQ_GOV_SMARTASSV2
 	help
 		Use the CPUFreq governor 'smartassV2' as default.
-
-	  performance.
 
 config CPU_FREQ_DEFAULT_GOV_INTELLIACTIVE
 	bool "intelliactive"
